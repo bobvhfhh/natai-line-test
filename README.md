@@ -4,22 +4,24 @@
 
 已在 Alpine Linux 3.21 的纳泰云美国 NAT VPS 上验证运行，也兼容常见 Debian 系统。
 
-## 快速开始
+## 快速开始（一行命令）
 
-下载脚本并运行：
+默认就是轻量快速模式：每个运营商测试一个目标，适合直接粘贴到 SSH：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh -o natai-line-test.sh
-chmod +x natai-line-test.sh
-./natai-line-test.sh --quick
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh
 ```
 
-如果服务器没有 `curl`，可以使用 `wget`：
+指定完整模式：
 
 ```sh
-wget -O natai-line-test.sh https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh
-chmod +x natai-line-test.sh
-./natai-line-test.sh --quick
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full
+```
+
+如果服务器没有 `curl`，使用这一行：
+
+```sh
+wget -qO- https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh
 ```
 
 ## 常用用法
@@ -27,32 +29,32 @@ chmod +x natai-line-test.sh
 快速模式：每个运营商测试一个目标，适合先看大致线路。
 
 ```sh
-./natai-line-test.sh --quick
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --quick
 ```
 
 完整模式：电信、联通、移动各测试两个目标。
 
 ```sh
-./natai-line-test.sh --full
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full
 ```
 
 降低等待时间、限制最大跳数：
 
 ```sh
-./natai-line-test.sh --full --timeout 1 --hops 8
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full --timeout 1 --hops 8
 ```
 
 只测试一个目标：
 
 ```sh
-./natai-line-test.sh --target 联通北京
-./natai-line-test.sh --target 123.125.99.1
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --target 联通北京
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --target 123.125.99.1
 ```
 
 查看全部参数：
 
 ```sh
-./natai-line-test.sh --help
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --help
 ```
 
 ## 参数说明
@@ -62,8 +64,8 @@ chmod +x natai-line-test.sh
 | `--quick` | 每个运营商只测试一个目标 |
 | `--full` | 测试全部内置目标 |
 | `--target NAME` | 只测试指定名称或 IP |
-| `--timeout SEC` | 每跳等待秒数，默认 `3` |
-| `--hops N` | 最大跳数，默认 `12` |
+| `--timeout SEC` | 每跳等待秒数，默认 `1` |
+| `--hops N` | 最大跳数，默认 `8` |
 | `--help` | 显示帮助 |
 | `--version` | 显示版本 |
 
@@ -82,7 +84,7 @@ NAT VPS 经常隐藏上游路由、过滤 ICMP/UDP 或限制 traceroute。脚本
 如果只看到第一跳私网网关和后面大量 `*`，这是 NAT 环境的常见结果。可以尝试：
 
 ```sh
-./natai-line-test.sh --full --timeout 1 --hops 16
+curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full --timeout 1 --hops 16
 ```
 
 ## 内置目标

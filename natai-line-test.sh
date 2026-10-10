@@ -1,19 +1,19 @@
 #!/bin/sh
 set -eu
-VERSION=1.0
-MODE=normal
+VERSION=1.1
+MODE=quick
 TARGET_FILTER=
-TIMEOUT=3
-HOPS=12
+TIMEOUT=1
+HOPS=8
 usage() {
   cat <<'EOF'
 NAT VPS 三网线路探测器 (Alpine/Debian, no install required)
 用法: natai-line-test.sh [选项]
-  --quick       每运营商只测一个目标
+  --quick       每运营商只测一个目标（默认）
   --full        每运营商测全部目标
   --target NAME 只测指定目标名
-  --timeout SEC 单次探测超时，默认 3
-  --hops N      最大跳数，默认 12
+  --timeout SEC 单次探测超时，默认 1
+  --hops N      最大跳数，默认 8
   --help        显示帮助
 EOF
 }

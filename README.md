@@ -1,100 +1,59 @@
-# NAT VPS 三网线路探测器
+# 河南三网线路检测器
 
-一个适合小内存 NAT VPS 的轻量级三网线路探测脚本。它使用系统已有的 `traceroute`、`curl`、`wget` 和 `awk`，不需要安装 Go、Node.js 或 Python。
+这个脚本专门用于小内存 NAT VPS，只检测河南省三网回程线路，并复用 TcpQuality 的线路识别逻辑。输出中的线路标签包括 `CN2GIA`、`CN2GT`、`9929`、`4837`、`163`、`CMI`、`CMIN2` 等。
 
-已在 Alpine Linux 3.21 的纳泰云美国 NAT VPS 上验证运行，也兼容常见 Debian 系统。
+## 一行运行
 
-## 快速开始（一行命令）
-
-默认就是轻量快速模式：每个运营商测试一个目标，适合直接粘贴到 SSH：
+默认只做线路识别：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh
 ```
 
-指定完整模式：
+追加河南节点 TCP 延迟/丢包：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full
 ```
 
-如果服务器没有 `curl`，使用这一行：
-
-```sh
-wget -qO- https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh
-```
-
-## 常用用法
-
-快速模式：每个运营商测试一个目标，适合先看大致线路。
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --quick
-```
-
-完整模式：电信、联通、移动各测试两个目标。
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full
-```
-
-降低等待时间、限制最大跳数：
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full --timeout 1 --hops 8
-```
-
-只测试一个目标：
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --target 联通北京
-curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --target 123.125.99.1
-```
-
-查看全部参数：
+查看帮助：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --help
 ```
 
-## 参数说明
+## 输出含义
 
-| 参数 | 说明 |
+- `CN2GIA` / `CN2GT`：电信 CN2 线路。
+- `9929`：联通 9929 高端骨干。
+- `4837`：联通 4837 普通骨干。
+- `163`：电信传统 163 骨干。
+- `CMI` / `CMIN2`：中国移动国际及高端线路。
+- `Hidden`：路径被 NAT、防火墙或目标网络隐藏，不能据此断言线路类型。
+
+## 参数
+
+| 参数 | 作用 |
 | --- | --- |
-| `--quick` | 每个运营商只测试一个目标 |
-| `--full` | 测试全部内置目标 |
-| `--target NAME` | 只测试指定名称或 IP |
-| `--timeout SEC` | 每跳等待秒数，默认 `1` |
-| `--hops N` | 最大跳数，默认 `8` |
+| 无参数 | 河南 IPv4 三网 TCP 回程线路识别 |
+| `--full` | 线路识别后追加低并发 TCP 延迟/丢包探测 |
+| `--debug` | 输出 TcpQuality 调试信息 |
 | `--help` | 显示帮助 |
-| `--version` | 显示版本 |
 
-## 输出怎么看
+## Alpine 依赖
 
-- `本机出口`：服务器通过公网访问时看到的出口 IP。
-- 每个目标下面的数字行：从 VPS 到目标的逐跳路径。
-- `*`：该跳没有返回探测包，不代表线路一定中断。
-- `10.x.x.x`、`192.168.x.x` 等私网地址：通常是 NAT 容器到宿主机或上游网关的内部跳点。
-- `无响应或被 NAT/防火墙过滤`：目标或中间网络过滤了 traceroute 探测包。
-
-## NAT VPS 限制
-
-NAT VPS 经常隐藏上游路由、过滤 ICMP/UDP 或限制 traceroute。脚本因此采用低并发、单探针设计，不会因为探测失败修改网络配置，也不会安装大型依赖。
-
-如果只看到第一跳私网网关和后面大量 `*`，这是 NAT 环境的常见结果。可以尝试：
+脚本需要 `curl` 和 `bash`。如果系统没有：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/bobvhfhh/natai-line-test/main/natai-line-test.sh | sh -s -- --full --timeout 1 --hops 16
+apk add --no-cache curl bash
 ```
 
-## 内置目标
+TcpQuality 的线路识别还会使用 `traceroute`；纳泰云当前已安装。如果没有，安装：
 
-- 电信：上海、广州
-- 联通：北京、上海
-- 移动：北京、广州
+```sh
+apk add --no-cache traceroute
+```
 
-目标是用于判断不同运营商方向的大致路径，不是带宽、延迟或跨网质量的完整基准测试。
+## 注意
 
-## 许可证
-
-MIT
+NAT VPS 只能从自身出口发起探测；如果上游隐藏了路径，可能显示 `Hidden`。这不是线路不存在，而是中间设备没有返回足够的路由信息。
